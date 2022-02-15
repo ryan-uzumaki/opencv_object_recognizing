@@ -4,9 +4,46 @@
 #include <opencv2/imgproc/types_c.h>
 #include "opencv2/objdetect.hpp"
 #include "stdlib.h"
+#include "core/core.hpp"  
+#include "highgui/highgui.hpp"  
+#include "imgproc/imgproc.hpp"  
 
 using namespace std;
 using namespace cv;
+
+void detect_object(Mat& imageSource) {
+	//imshow("Source Image", imageSource);
+	Mat image=Mat::zeros(imageSource.size(),imageSource.type());
+	image=imageSource.clone();
+	//GaussianBlur(imageSource, image, Size(3, 3), 0);
+	Canny(image, image, 50, 100);
+	vector<vector<Point>> contours;
+	vector<Vec4i> hierarchy;
+	findContours(image, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
+	Mat imageContours = Mat::zeros(image.size(), CV_8UC1);
+	Mat Contours = Mat::zeros(image.size(), CV_8UC1);  //绘制
+	for (int i = 0; i < contours.size(); i++) {
+		//contours[i]代表的是第i个轮廓，contours[i].size()代表的是第i个轮廓上所有的像素点数
+		for (int j = 0; j < contours[i].size(); j++) {
+			//绘制出contours向量内所有的像素点
+			Point P = Point(contours[i][j].x, contours[i][j].y);
+			Contours.at<uchar>(P) = 255;
+		}
+
+		//输出hierarchy向量内容
+		/*char ch[256];
+		sprintf_s(ch, "%d", i);
+		string str = ch;
+		cout << "向量hierarchy的第" << str << " 个元素内容为：" << endl << hierarchy[i] << endl << endl;*/
+
+		//绘制轮廓
+		drawContours(imageContours, contours, i, Scalar(255), 1, 8, hierarchy);
+	}
+	imshow("Contours Image", imageContours); //轮廓
+	//imshow("Point of Contours", Contours);   //向量contours内保存的所有轮廓点集
+	waitKey(0);
+}
+
 
 int main(int, char* argv[])
 {
@@ -18,12 +55,13 @@ int main(int, char* argv[])
 		cout << "错误!读取图像失败\n";
 		return -1;
 	}
-	//	imshow("原图", OriginalImg); //显示原始图像
+	//imshow("原图", OriginalImg); //显示原始图像
 	cout << "Width:" << OriginalImg.rows << "\tHeight:" << OriginalImg.cols << endl;//打印长宽
 
 	Mat ResizeImg;
-	if (OriginalImg.cols > 640)
+	if (OriginalImg.cols > 640) {
 		resize(OriginalImg, ResizeImg, Size(640, 640 * OriginalImg.rows / OriginalImg.cols));
+	}
 	imshow("尺寸变换图", ResizeImg);
 
 	unsigned char pixelB, pixelG, pixelR;  //记录各通道值
@@ -80,14 +118,19 @@ int main(int, char* argv[])
 	bool   TestPlantFlag = 0;  //车牌检测成功标志位
 	cvtColor(BinOriImg, BinOriImg, CV_BGR2GRAY);   //将形态学处理之后的图像转化为灰度图像
 	threshold(BinOriImg, BinOriImg, 100, 255, THRESH_BINARY); //灰度图像二值化
-	CvMemStorage* storage = cvCreateMemStorage(0);
-	CvSeq* seq = 0;     //创建一个序列,CvSeq本身就是一个可以增长的序列，不是固定的序列
-	CvSeq* tempSeq = cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvSeq), sizeof(CvPoint), storage);
-	int cnt = cvFindContours(&(IplImage(BinOriImg)), storage, &seq, sizeof(CvContour), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+	//detect_object(BinOriImg);
+	vector<vector<Point>> contours;
+	vector<Vec<int,4>> hierarchy;
+	//CvMemStorage* storage = cvCreateMemStorage(0);
+	//CvSeq* seq = 0;     //创建一个序列,CvSeq本身就是一个可以增长的序列，不是固定的序列
+	//CvSeq* tempSeq = cvCreateSeq(CV_SEQ_ELTYPE_POINT, sizeof(CvSeq), sizeof(CvPoint), storage);
+	findContours(BinOriImg, contours, hierarchy, CV_RETR_EXTERNAL,CV_CHAIN_APPROX_SIMPLE);
+	int cnt = size(contours);
+	//int cnt = cvFindContours(&(IplImage(BinOriImg)), storage, &seq, sizeof(CvContour), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 	//第一个参数是IplImage指针类型，将MAT强制转换为IplImage指针类型
 	//返回轮廓的数目 
 	//获取二值图像中轮廓的个数
-	cout << "number of contours   " << cnt << endl;  //打印轮廓个数
+	cout << "number of contours:" << cnt << endl;  //打印轮廓个数
 	for (tempSeq = seq; tempSeq != NULL; tempSeq = tempSeq->h_next)
 	{
 		length = cvArcLength(tempSeq);       //获取轮廓周长
