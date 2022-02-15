@@ -2,6 +2,8 @@
 #include <iostream>
 #include <opencv2\opencv.hpp>
 #include <opencv2/imgproc/types_c.h>
+#include "opencv2/objdetect.hpp"
+#include "stdlib.h"
 
 using namespace std;
 using namespace cv;
@@ -10,7 +12,7 @@ int main(int, char* argv[])
 {
 	Mat OriginalImg;
 
-	OriginalImg = imread("TestPhoto (1).jpg", IMREAD_COLOR);//读取原始彩色图像
+	OriginalImg = imread("C:\\Users\\ryand\\Desktop\\test_detecting.jpg", IMREAD_COLOR);//读取原始彩色图像
 	if (OriginalImg.empty())  //判断图像对否读取成功
 	{
 		cout << "错误!读取图像失败\n";
@@ -116,8 +118,9 @@ int main(int, char* argv[])
 			{
 				Mat GuiRGBImg = ResizeImg.clone();
 				TestPlantFlag = true;             //检测车牌区域成功
-				for (int i = 0; i < 4; ++i)       //划线框出车牌区域
-					cvLine(&(IplImage(GuiRGBImg)), cvPointFrom32f(pt[i]), cvPointFrom32f(pt[((i + 1) % 4) ? (i + 1) : 0]), CV_RGB(255, 0, 0));
+				for (int i = 0; i < 4; ++i) {
+					line((Mat(GuiRGBImg)), cvPointFrom32f(pt[i]), cvPointFrom32f(pt[((i + 1) % 4) ? (i + 1) : 0]), CV_RGB(255, 0, 0));
+				}       //划线框出车牌区域
 				imshow("提取车牌结果图", GuiRGBImg);    //显示最终结果图
 
 				box = boxTemp;
