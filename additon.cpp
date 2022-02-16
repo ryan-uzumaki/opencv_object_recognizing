@@ -1,39 +1,46 @@
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/types_c.h>
+#include "opencv2/objdetect.hpp"
+#include "stdlib.h"
 #include "core/core.hpp"  
 #include "highgui/highgui.hpp"  
-#include "imgproc/imgproc.hpp"  
-#include "iostream"
+#include "imgproc/imgproc.hpp"
+#include <algorithm>
 
 using namespace std;
 using namespace cv;
 
-void detect_object1(Mat & imageSource){
-	imshow("Source Image", imageSource);
-	Mat image;
-	GaussianBlur(imageSource, image, Size(3, 3), 0);
-	Canny(image, image, 100, 250);
-	vector<vector<Point>> contours;
-	vector<Vec4i> hierarchy;
-	findContours(image, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
-	Mat imageContours = Mat::zeros(image.size(), CV_8UC1);
-	Mat Contours = Mat::zeros(image.size(), CV_8UC1);  //绘制
-	for (int i = 0; i < contours.size(); i++){
-		//contours[i]代表的是第i个轮廓，contours[i].size()代表的是第i个轮廓上所有的像素点数
-		for (int j = 0; j < contours[i].size(); j++){
-			//绘制出contours向量内所有的像素点
-			Point P = Point(contours[i][j].x, contours[i][j].y);
-			Contours.at<uchar>(P) = 255;
+int main2() {
+	VideoCapture capture(0);
+	Mat frame;
+	while (true) {
+		capture.read(frame);
+		if (frame.empty()) {
+			break;
 		}
-
-		//输出hierarchy向量内容
-		/*char ch[256];
-		sprintf_s(ch, "%d", i);
-		string str = ch;
-		cout << "向量hierarchy的第" << str << " 个元素内容为：" << endl << hierarchy[i] << endl << endl;*/
-
-		//绘制轮廓
-		drawContours(imageContours, contours, i, Scalar(255), 1, 8, hierarchy);
+		imshow("detected", frame);
+		Mat dst;
+		bilateralFilter(frame, dst, 5, 20, 20);
+		cvtColor(dst, dst, COLOR_BGR2HSV);
+		Mat element = getStructuringElement(MORPH_RECT, Size(5, 5));
+		Mat m_ResImg;
+		erode(dst, m_ResImg, element);//进行腐蚀操作
+		Mat mask;
+		inRange(m_ResImg, Scalar(35, 43, 46), Scalar(77, 255, 255),mask);
+		vector<vector<Point>> contours;
+		vector<Vec4i> hierarchy;
+		findContours(m_ResImg, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
+		double cnts;
+		cnts = contourArea(contours);
+		RotatedRect rrt = minAreaRect(cnts);
+		Mat pts;
+		boxPoints(rrt, pts);
+		drawContours(frame, contours, 0, Scalar(0, 0, 255), -1, 8);
+		int c = waitKey(1);
+		if (c == 27) { // 退出
+			break;
+		}
 	}
-	imshow("Contours Image", imageContours); //轮廓
-	//imshow("Point of Contours", Contours);   //向量contours内保存的所有轮廓点集
-	waitKey(0);
+	return 0;
 }
