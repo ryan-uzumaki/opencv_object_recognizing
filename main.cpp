@@ -200,7 +200,7 @@ int main() {
 	//	cvtColor(m_ResImg, m_ResImg, COLOR_HSV2BGR);
 	//	unsigned char pixelB, pixelG, pixelR;
 	//	unsigned char DifMax = 50;             //基于颜色区分的阈值设置
-	//	unsigned char B = 138, G = 63, R = 23; //各通道的阈值设定，针对与蓝色车牌
+	//	unsigned char B = 138, G = 63, R = 23; //各通道的阈值设定
 	//	Mat  HSVImg_after_erode = m_ResImg.clone();
 	//	for (int i = 0; i < m_ResImg.rows; i++)   //通过颜色分量将图片进行二值化处理
 	//	{
