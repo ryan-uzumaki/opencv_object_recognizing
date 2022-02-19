@@ -180,7 +180,7 @@ void detect_object(Mat& imageSource) {
 //
 //}
 
-void picture_operation(Mat& image);
+void object_recognition(Mat& image);
 
 int main() {
 	VideoCapture capture(0);
@@ -190,81 +190,57 @@ int main() {
 		if (frame.empty()) {
 			break;
 		}
-	//	Mat dst;
-	//	bilateralFilter(frame, dst, 5, 20, 20);
-	//	Mat m_ResImg;
-	//	cvtColor(dst, m_ResImg, COLOR_BGR2HSV);
-	//	Mat element = getStructuringElement(MORPH_RECT, Size(5, 5));
-	//	erode(m_ResImg, m_ResImg, element);//进行腐蚀操作
-	//	erode(m_ResImg, m_ResImg, element);//进行腐蚀操作
-	//	cvtColor(m_ResImg, m_ResImg, COLOR_HSV2BGR);
-	//	unsigned char pixelB, pixelG, pixelR;
-	//	unsigned char DifMax = 50;             //基于颜色区分的阈值设置
-	//	unsigned char B = 138, G = 63, R = 23; //各通道的阈值设定
-	//	Mat  HSVImg_after_erode = m_ResImg.clone();
-	//	for (int i = 0; i < m_ResImg.rows; i++)   //通过颜色分量将图片进行二值化处理
-	//	{
-	//		for (int j = 0; j < m_ResImg.cols; j++)
-	//		{
-	//			pixelB = m_ResImg.at<Vec3b>(i, j)[0]; //获取图片各个通道的值
-	//			pixelG = m_ResImg.at<Vec3b>(i, j)[1];
-	//			pixelR = m_ResImg.at<Vec3b>(i, j)[2];
-
-	//			if (abs(pixelB - B) < DifMax && abs(pixelG - G) < DifMax && abs(pixelR - R) < DifMax)
-	//			{                                           //将各个通道的值和各个通道阈值进行比较
-	//				HSVImg_after_erode.at<Vec3b>(i, j)[0] = 255;     //符合颜色阈值范围内的设置成白色
-	//				HSVImg_after_erode.at<Vec3b>(i, j)[1] = 255;
-	//				HSVImg_after_erode.at<Vec3b>(i, j)[2] = 255;
-	//			}
-	//			else
-	//			{
-	//				HSVImg_after_erode.at<Vec3b>(i, j)[0] = 0;        //不符合颜色阈值范围内的设置为黑色
-	//				HSVImg_after_erode.at<Vec3b>(i, j)[1] = 0;
-	//				HSVImg_after_erode.at<Vec3b>(i, j)[2] = 0;
-	//			}
-	//		}
-	//	}
-	//	/*Mat mask;
-	//	inRange(m_ResImg, Scalar(0, 0, 0), Scalar(180, 255, 46), mask);*/
-	//	cvtColor(HSVImg_after_erode, HSVImg_after_erode, COLOR_BGR2GRAY);
-	//	vector<vector<Point>> contours;
-	//	vector<Vec4i> hierarchy;
-	//	findContours(HSVImg_after_erode, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
-	//	/*double cnts;
-	//	cnts = contourArea(contours);
-	//	RotatedRect rrt = minAreaRect(cnts);
-	//	Mat pts;
-	//	boxPoints(rrt, pts);
-	//	drawContours(frame, contours, 0, Scalar(0, 0, 255), -1, 8);*/
-	//	for (int i = 0; i < contours.size(); i++) {
-	//		for (int j = 0; j < contours[i].size(); j++) {
-	//			Point P = Point(contours[i][j].x, contours[i][j].y);
-	//			Mat Contours = Mat::zeros(m_ResImg.size(), CV_8UC1);  //绘制
-	//			Contours.at<uchar>(P) = 255;
-	//		}
-	//		drawContours(frame, contours, i, Scalar(255,0,0), 1, 8, hierarchy);
-	//	}
-	//	imshow("detected", frame);
-		picture_operation(frame);
+		Mat temp = Mat::zeros(frame.size(), frame.type());
+		Mat m = Mat::zeros(frame.size(), frame.type());
+		addWeighted(frame, 0.19, m, 0.0, 0, temp);
+		Mat dst;
+		bilateralFilter(temp, dst, 5, 20, 20);
+		Mat m_ResImg;
+		cvtColor(dst, m_ResImg, COLOR_BGR2HSV);
+		Mat element = getStructuringElement(MORPH_RECT, Size(5, 5));
+		erode(m_ResImg, m_ResImg, element);//进行腐蚀操作
+		erode(m_ResImg, m_ResImg, element);//进行腐蚀操作
+		erode(m_ResImg, m_ResImg, element);//进行腐蚀操作
+		Mat mask;
+		inRange(m_ResImg, Scalar(100, 43, 46), Scalar(124, 255, 255), mask);
+		vector<vector<Point>> contours;
+		vector<Vec4i> hierarchy;
+		findContours(mask, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point());
+		for (int i = 0; i < contours.size(); i++) {
+			for (int j = 0; j < contours[i].size(); j++) {
+				Point P = Point(contours[i][j].x, contours[i][j].y);
+				Mat Contours = Mat::zeros(m_ResImg.size(), CV_8UC1);  //绘制
+				Contours.at<uchar>(P) = 255;
+			}
+			drawContours(frame, contours, i, Scalar(0, 255, 0), 2, 8, hierarchy);
+		}
+		namedWindow("detected", WINDOW_FREERATIO);
+		imshow("detected", frame);
 		int c = waitKey(1);
 		if (c == 27) { // 退出
 			break;
 		}
 	}
-	/*Mat test;
-	test = imread("E:\\opencv\\sources\\samples\\data\\opencv-logo-white.png");
-	picture_operation(test);
-	waitKey(0);*/
 	return 0;
 }
 
 
-void picture_operation(Mat & image) {
+
+void object_recognition(Mat & image) {
+	Mat temp = Mat::zeros(image.size(), image.type());
+	Mat m = Mat::zeros(image.size(), image.type());
+	addWeighted(image, 0.19, m, 0.5, 0, temp);
 	Mat dst;
-	bilateralFilter(image, dst, 5, 20, 20);
+	bilateralFilter(temp, dst, 5, 20, 20);
 	Mat m_ResImg;
 	cvtColor(dst, m_ResImg, COLOR_BGR2HSV);
 	Mat element = getStructuringElement(MORPH_RECT, Size(5, 5));
+	//dilate(m_ResImg, m_ResImg, element);//多次膨胀
+	//dilate(m_ResImg, m_ResImg, element);
+	//dilate(m_ResImg, m_ResImg, element);
+
+	erode(m_ResImg, m_ResImg, element);//进行腐蚀操作
+	erode(m_ResImg, m_ResImg, element);//进行腐蚀操作
 	erode(m_ResImg, m_ResImg, element);//进行腐蚀操作
 	//cvtColor(m_ResImg, m_ResImg, COLOR_HSV2BGR);
 	//unsigned char pixelB, pixelG, pixelR;
