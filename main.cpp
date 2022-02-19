@@ -17,7 +17,6 @@ int known_W = 9;
 int known_P = 510;
 
 double get_distance(int W, int P);
-void object_recognition(Mat& image);
 string Convert(float Num);
 
 
