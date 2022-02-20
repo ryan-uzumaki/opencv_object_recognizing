@@ -31,7 +31,7 @@ int main() {
 		if (frame.empty() || frame_1.empty()) {
 			break;
 		}
-		object.object_recognition(frame);
+		object.object_recognition(frame,frame_1);
 		int c = waitKey(1);
 		if (c == 27) { // ÍË³ö
 			break;
