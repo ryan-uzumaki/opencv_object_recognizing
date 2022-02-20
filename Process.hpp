@@ -14,18 +14,6 @@
 
 using namespace std;
 using namespace cv;
-//
-//template<class ForwardIterator>
-//inline size_t argmin(ForwardIterator first, ForwardIterator last)
-//{
-//	return std::distance(first, std::min_element(first, last));
-//}
-//
-//template<class ForwardIterator>
-//inline size_t argmax(ForwardIterator first, ForwardIterator last)
-//{
-//	return std::distance(first, std::max_element(first, last));
-//}
 
 class Process {
 public:
@@ -94,11 +82,6 @@ void Process::object_recognition(Mat& image, Mat& image_temp_1) {
 	avgX = ret_1.x;
 	avgY = ret_1.y;
 	for (int i = 0; i < contours.size(); i++) {
-		//for (int j = 0; j < contours[i].size(); j++) {
-		//	Point P = Point(contours[i][j].x, contours[i][j].y);
-		//	Mat Contours = Mat::zeros(m_ResImg.size(), CV_8UC1);  //»æÖÆ
-		//	Contours.at<uchar>(P) = 255;
-		//}
 		Rect box(ret_1.x, ret_1.y, ret_1.width, ret_1.height);
 		rectangle(image, box, Scalar(0, 0, 255), 2, 8, 0);
 		drawContours(image, contours, maxIndex, Scalar(0, 255, 0), 2, 8, hierarchy);
@@ -148,7 +131,4 @@ void Process::predict(Mat& image, Mat& image_temp, int avgX_temp, int avgY_temp)
 	Rect ret_2(avgX_mean, avgY_mean, ret_1.width, ret_1.height);
 	Rect box(ret_2.x, ret_2.y, ret_2.width, ret_2.height);
 	rectangle(image, box, Scalar(255, 0, 0), 2, 8, 0);
-	/*for (int i = 0; i < contours.size(); i++) {
-		drawContours(image, contours, maxIndex, Scalar(0, 255, 0), 2, 8, hierarchy);
-	}*/
 }
