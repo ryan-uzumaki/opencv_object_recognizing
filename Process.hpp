@@ -126,8 +126,8 @@ void Process::predict(Mat& image, Mat& image_temp, int avgX_temp, int avgY_temp)
 	int avgX_mean, avgY_mean;
 	avgX = ret_1.x;
 	avgY = ret_1.y;
-	avgX_mean = (avgX + avgX_temp) / 2;
-	avgY_mean = (avgY + avgY_temp) / 2;
+	avgX_mean = round((0.3 * avgX + 0.7 * avgX_temp));
+	avgY_mean = round((0.3 * avgY + 0.7 * avgY_temp));
 	Rect ret_2(avgX_mean, avgY_mean, ret_1.width, ret_1.height);
 	Rect box(ret_2.x, ret_2.y, ret_2.width, ret_2.height);
 	rectangle(image, box, Scalar(255, 0, 0), 2, 8, 0);
